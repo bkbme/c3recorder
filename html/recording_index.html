@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<link rel="shortcut icon" type="image/ico" href="http://www.datatables.net/favicon.ico" />
+		
+		<title>29c3 recordings</title>
+		<style type="text/css" title="currentStyle">
+			@import "DataTables/media/css/demo_page.css";
+			@import "DataTables/media/css/demo_table.css";
+		</style>
+		<script type="text/javascript" language="javascript" src="DataTables/media/js/jquery.js"></script>
+		<script type="text/javascript" language="javascript" src="DataTables/media/js/jquery.dataTables.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			$(document).ready(function() {
+				$('#example').dataTable({
+          "bProcessing": true,
+          "sAjaxSource": "DataTables/list.html"
+        });
+			} );
+		</script>
+	</head>
+	<body id="dt_example">
+  <div id="container">
+			<h1>29c3 recordings</h1>
+<table cellpadding="0" cellspacing="0" border="0" class="display" id="example" width="100%">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Title</th>
+			<th>Room</th>
+			<th>Date</th>
+			<th>Size [MB]</th>
+			<th>Download</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+	<tfoot>
+		<tr>
+			<th>ID</th>
+			<th>Title</th>
+			<th>Room</th>
+			<th>Date</th>
+			<th>Size [MB]</th>
+			<th>Download</th>
+		</tr>
+	</tfoot>
+</table>
+</div>
+	</body>
+</html>
