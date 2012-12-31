@@ -3,6 +3,12 @@ from datetime import datetime, timedelta, date, time
 import os
 import fnmatch
 
+#Constants
+serverUrl="http://29c3.ex23.de/"
+fahrplanUrl="http://events.ccc.de/congress/2012/Fahrplan/events/"
+listOutput="html/DataTables/list.html"
+recordingLocation="/var/www"
+
 s = ScheduleInterpreter()
 s.createTalksLists()
 
@@ -33,12 +39,12 @@ class recording(object):
       self.official = True
   def getArray(self):
     rv = ""
-    rv = "[ \"<a href=\\\"http://events.ccc.de/congress/2012/Fahrplan/events/{0}.en.html\\\">{0}</a>\"," \
+    rv = "[ \"<a href=\\\"{6}{0}.en.html\\\">{0}</a>\"," \
        + "\"{6}{1}{7}\"," \
        + "\"{2}\"," \
        + "\"{3}\"," \
        + "\"{4}\"," \
-       + "\"<a href=\\\"http://29c3.ex23.de/{5}\\\">download</a>\" ]"
+       + "\"<a href=\\\"{7}/{5}\\\">download</a>\" ]"
     rv = rv.format(str(self.talk.id), \
                   self.talk.title.replace("_", " ") + (" (official)" if self.official else ""),
                   self.talk.room,
@@ -46,17 +52,16 @@ class recording(object):
                   str(round(self.size/(1024*1024), 2)),
                   self.filename.replace("/var/www/", ""),
                   "<strong>" if self.official else "",
-                  "</strong>" if self.official else ""
+                  "</strong>" if self.official else "",
+                  fahrplanUrl,
+                  serverUrl
                   )
-
-
 
     return rv
 
-
 recordings = []
 for talk in s.saal1 + s.saal4 + s.saal6:
-  for root, dirnames, filenames in os.walk('/var/www'):
+  for root, dirnames, filenames in os.walk(recordingLocation):
     for filename in filenames:
       if(str(talk.id)+'-' in filename and
         (filename[-4:] == '.avi' or filename[-8:] == 'h264.mp4' or filename[-4:] == '.wmv')):
@@ -75,7 +80,7 @@ for i in range(0, len(recordings)):
   if( i < len(recordings)-1 ):
     content += ","
 
-out = open("/var/www/DataTables/list.html", "w")
+out = open(listOutput, "w")
 out.write(frameStart)
 out.write(content)
 out.write(frameEnd)
