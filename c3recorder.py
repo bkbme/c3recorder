@@ -2,7 +2,14 @@
 import xml.etree.ElementTree 
 from datetime import datetime, timedelta, date, time
 
+congressName='29c3'
+
 class Talk:
+  roomlist={'Saal 1': 'saal1', \
+            'Saal 4': 'saal4', \
+            'Saal 6': 'saal6', \
+            'Saal 17': 'saal17'}
+
   """Class representing a ccc talk"""
   def __init__(self, title, day, start, duration, room, id, lang):
     """Create instance of Talk class:
@@ -24,12 +31,11 @@ class Talk:
     if self.startDate.hour < 11:
       self.startDate += timedelta(days=1)
     duration_time = timedelta(hours=int(duration.split(':')[0]), minutes=int(duration.split(':')[1]));
-    if room == "Saal 1":
-      self.room = "saal1"
-    elif room == "Saal 2":
-      self.room = "saal2"
-    elif room == "Saal 3":
-      self.room = "saal3"
+
+    if room not in self.roomlist:
+      raise Exception("Unknown room name: {0}".format(room))
+    else:
+      self.room = self.roomlist[room]
 
     self.endDate = self.startDate + duration_time
     self.lang = lang
@@ -39,7 +45,11 @@ class Talk:
     print("({}) start({}) end ({}) room({})".format(self.title, self.startDate, self.endDate, self.room))
   def fileName(self):
     """Return filename for the recording"""
-    return "28c3-{}-{}-{}-{}-{}".format(self.id, self.lang, self.room, self.startDate.strftime("%Y-%m-%d_%H-%M"), self.title)
+    return "{}-{}-{}-{}-{}-{}".format(congressName, self.id, self.lang, self.room, self.startDate.strftime("%Y-%m-%d_%H-%M"), self.title)
+  def __repr__(self):
+    rv="|{0}|{1}|{2}".format(self.room, self.title, self.startDate)
+    return rv
+
 
 class ScheduleInterpreter:
   """This class can download the xml schedule,
@@ -48,7 +58,7 @@ class ScheduleInterpreter:
   and calculate what is going on right now.
   """
   host = "events.ccc.de"
-  url  = "/congress/2011/Fahrplan/schedule.en.xml"
+  url  = "/congress/2012/Fahrplan/schedule.en.xml"
   def getSchedule(self):
     """Get xml schedule from the web and parse the xml.
     Save downloaded xml to file.
@@ -84,7 +94,7 @@ class ScheduleInterpreter:
 
   def createTalksLists(self):
     """use getSchedule to download schedule.
-    Create members "saal1", "saal2", "saal3", which
+    Create members "saal1", "saal4", "saal6", which
     represent a sorted list of talks.
     """
     schedule = self.getSchedule()
@@ -115,22 +125,22 @@ class ScheduleInterpreter:
         talkList.append(theTalk)
 
     saal1 = []
-    saal2 = []
-    saal3 = []
+    saal4 = []
+    saal6 = []
     for talk in talkList:
       if talk.room == "saal1":
         saal1.append(talk)
-      if talk.room == "saal2":
-        saal2.append(talk)
-      if talk.room == "saal3":
-        saal3.append(talk)
+      if talk.room == "saal4":
+        saal4.append(talk)
+      if talk.room == "saal6":
+        saal6.append(talk)
 
     saal1 = sorted(saal1, key = lambda talk: talk.startDate)
-    saal2 = sorted(saal2, key = lambda talk: talk.startDate)
-    saal3 = sorted(saal3, key = lambda talk: talk.startDate)
+    saal4 = sorted(saal4, key = lambda talk: talk.startDate)
+    saal6 = sorted(saal6, key = lambda talk: talk.startDate)
     self.saal1 = saal1
-    self.saal2 = saal2
-    self.saal3 = saal3
+    self.saal4 = saal4
+    self.saal6 = saal6
 
   def getLDND(self, roomNo, now):
     """Get last delta time and next delta time for
@@ -142,10 +152,10 @@ class ScheduleInterpreter:
     """
     if roomNo == 1:
       talksListOfRoom = self.saal1
-    elif roomNo == 2:
-      talksListOfRoom = self.saal2
-    elif roomNo == 3:
-      talksListOfRoom = self.saal3
+    elif roomNo == 4:
+      talksListOfRoom = self.saal4
+    elif roomNo == 6:
+      talksListOfRoom = self.saal6
 
     found = False
     i=0
@@ -186,7 +196,7 @@ from subprocess import Popen
 
 class FileWriter:
   """Class for recording talks, encapsulating mplayer"""
-  streamurl = "http://wmv.28c3.fem-net.de/saal"
+  streamurl = "http://wmv.{}.fem-net.de/saal".format(congressName)
   def __init__(self, destination, roomNo):
     """Create an instance of the FileWriter class
     destination -- destination file where the talk should be written to
@@ -272,6 +282,6 @@ class TalkRecorder:
           self.fw.stop()
           self.fw = None
     if self.refreshSchedCnt > 10:
-      r.createTalksLists()
+      self.scheduleInterpreter.createTalksLists()
     self.refreshSchedCnt += 1
 
