@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+       "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>{{ title }}</title>
+
+</head>
+<body>
+
+<table border='1'>
+<tr>
+  <th>
+    Now
+  </th>
+  <th>
+    Time
+  </th>
+  {% for room in rooms %}
+  <th>
+    {{room}}
+  </th>
+  {% endfor %}
+</tr>
+
+{% for time in timeIntervals %}
+  <tr>
+    <td style="border:none;
+      {% if currentTime == time %}
+      background-color: red;
+      {% endif %}
+      ">
+      &nbsp;
+    </td>
+    {% if time.minute == 0 %}
+    <td rowspan=12>
+      {{ time }}
+    </td>
+    {% endif %}
+
+      {% for room in rooms %}
+        {% for talk in talks[room] %}
+          {% if talk.startDate == time %}
+            <td rowspan={{ ((talk.endDate - talk.startDate).total_seconds() / (5*60)) | int }} >
+            <a href="{{ talkDetailUrl.format(talk.id) }}">
+            <b>{{ talk.titleText }}</b><br>
+            </a>
+              {{ talk.subtitleText }}<br>
+              <em>{{ talk.id }}</em>
+              {% if talk.urls|length > 0 %}
+              <p>Recordings:
+                <ul>
+                {% for url in talk.urls %}
+                <li>
+                  <a href="{{ url }}">{{ talk.urls.index(url) }}</a>
+                </li>
+                {% endfor %}
+                </ul>
+
+              {% endif %}
+            </td>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+  </tr>
+{% endfor %}
+
+</table>
+ 
+</body>
+</html>

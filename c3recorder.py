@@ -55,6 +55,7 @@ class Talk:
     self.endDate = self.startDate + duration_time
     self.lang = lang
     self.id = id
+    self.urls = []
   def printit(self):
     """Debug helper"""
     print("({}) start({}) end ({}) room({})".format(self.title, self.startDate, self.endDate, self.room))
@@ -125,6 +126,8 @@ class ScheduleInterpreter:
         talk_duration = event.find("duration").text
         talk_lang = event.find("language").text
         talk_room = event.find("room").text
+        talk_title = event.find("title").text
+        talk_subtitle = event.find("subtitle").text
 
         if talk_room == None: 
           talk_room = ""
@@ -136,6 +139,8 @@ class ScheduleInterpreter:
         theTalk = Talk(talk_slug, day.attrib["date"], \
                        talk_start, talk_duration, talk_room, \
                        talk_id, talk_lang)
+        theTalk.titleText = talk_title
+        theTalk.subtitleText = talk_subtitle
         
         talkList.append(theTalk)
 
