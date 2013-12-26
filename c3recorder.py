@@ -1,14 +1,29 @@
 #!/usr/bin/python3
 import xml.etree.ElementTree 
 from datetime import datetime, timedelta, date, time
+import subprocess
 
-congressName='29c3'
+congressName='30c3'
+streamurls={ \
+            'saal1': 'rtmp://rtmp-hd.streaming.media.ccc.de:1935/stream/saal1_native_hd', \
+            'saal2': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/saal2_native_hq', \
+            'saalg': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/saalg_native_hq', \
+            'saal6': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/saal6_native_hq', \
+           }
 
 class Talk:
+  """Mapping of room names.
+     from external Names (as in the Fahrplan) to linux file friendly names.
+     Talk objects use the right side of the table as room names.
+  """
   roomlist={'Saal 1': 'saal1', \
-            'Saal 4': 'saal4', \
+            'Saal 2': 'saal2', \
             'Saal 6': 'saal6', \
-            'Saal 17': 'saal17'}
+            'Saal G': 'saalg', \
+            'Saal 17': 'saal17', \
+            'Wordlounge': 'worldlounge',\
+            'Villa Straylight': 'villa_straylight',\
+            'Lounge': 'lounge'}
 
   """Class representing a ccc talk"""
   def __init__(self, title, day, start, duration, room, id, lang):
@@ -58,7 +73,7 @@ class ScheduleInterpreter:
   and calculate what is going on right now.
   """
   host = "events.ccc.de"
-  url  = "/congress/2012/Fahrplan/schedule.en.xml"
+  url  = "/congress/2013/Fahrplan/schedule.xml"
   def getSchedule(self):
     """Get xml schedule from the web and parse the xml.
     Save downloaded xml to file.
@@ -81,12 +96,12 @@ class ScheduleInterpreter:
     tree = None
     try:
       tree = xml.etree.ElementTree.fromstring(data)
-      schedXml = open("schedule.en.xml", "w")
+      schedXml = open("schedule.xml", "w")
       schedXml.write(data)
       schedXml.close()
     except: 
       print("Failed to download schedule!")
-      schedXml = open("schedule.en.xml", "r")
+      schedXml = open("schedule.xml", "r")
       data = schedXml.read()
       tree = xml.etree.ElementTree.fromstring(data)
       schedXml.close()
@@ -124,38 +139,28 @@ class ScheduleInterpreter:
         
         talkList.append(theTalk)
 
-    saal1 = []
-    saal4 = []
-    saal6 = []
+    roomlist = dict()
+
+    for room in Talk.roomlist:
+      roomlist[Talk.roomlist[room]] = []
+
     for talk in talkList:
-      if talk.room == "saal1":
-        saal1.append(talk)
-      if talk.room == "saal4":
-        saal4.append(talk)
-      if talk.room == "saal6":
-        saal6.append(talk)
+      roomlist[talk.room].append(talk)
 
-    saal1 = sorted(saal1, key = lambda talk: talk.startDate)
-    saal4 = sorted(saal4, key = lambda talk: talk.startDate)
-    saal6 = sorted(saal6, key = lambda talk: talk.startDate)
-    self.saal1 = saal1
-    self.saal4 = saal4
-    self.saal6 = saal6
+    for room in roomlist:
+      roomlist[room] = sorted(roomlist[room], key = lambda talk: talk.startDate)
 
-  def getLDND(self, roomNo, now):
+    self.roomlist = roomlist
+
+  def getLDND(self, roomName, now):
     """Get last delta time and next delta time for
     the last, next talk.
-    roomNo -- the room you want the info of
+    roomName -- the room you want the info of (internal roomname)
     now    -- datetime object representing the current date/time
 
     returns lastDelta, lastTalk, nextDelta, nextTalk, currentTalk
     """
-    if roomNo == 1:
-      talksListOfRoom = self.saal1
-    elif roomNo == 4:
-      talksListOfRoom = self.saal4
-    elif roomNo == 6:
-      talksListOfRoom = self.saal6
+    talksListOfRoom = self.roomlist[roomName]
 
     found = False
     i=0
@@ -196,14 +201,14 @@ from subprocess import Popen
 
 class FileWriter:
   """Class for recording talks, encapsulating mplayer"""
-  streamurl = "http://wmv.{}.fem-net.de/saal".format(congressName)
-  def __init__(self, destination, roomNo):
+  #streamurl = "http://wmv.{}.fem-net.de/saal".format(congressName)
+  def __init__(self, destination, roomName):
     """Create an instance of the FileWriter class
     destination -- destination file where the talk should be written to
-    roomNo      -- roomNumber which should be recorded
+    roomName      -- roomNumber which should be recorded
     """
     self.destination = destination
-    self.roomNo = roomNo
+    self.roomName = roomName
 
   def poll(self):
     """Call this periodically to make sure that
@@ -219,23 +224,29 @@ class FileWriter:
 
   def start(self):
     """Start the recording"""
-    filename = self.destination + "-" + datetime.now().isoformat() + ".avi"
+    filename = self.destination + "-" + datetime.now().isoformat() + ".mp4"
     print(filename)
-    p = Popen(["mplayer", self.streamurl + str(self.roomNo), "-dumpstream", "-dumpfile", filename])
+    #p = Popen(["mplayer", self.streamurl + str(self.roomName), "-dumpstream", "-dumpfile", filename])
+    args = ["rtmpdump" ,"-v", "-r", streamurls[self.roomName], "-o", filename]
+    p = Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     self.pid = p.pid 
     self.filename = filename
     self.process = p 
+    print(' '.join(args))
+    print(p.pid)
+    print(p.stdout.read())
+    print(p.stderr.read())
 
 class TalkRecorder:
   """Class managing the recording of talks.
   """
   scheduleInterpreter = ScheduleInterpreter()
-  def __init__(self, roomNo, recDir):
+  def __init__(self, roomName, recDir):
     """Create an instance of the TalkRecorder class.
-    roomNo -- The number of the room this recorder should manage (e.g. 1)
+    roomName -- The name of the room this recorder should manage (e.g. 1)
     recDir -- The directory which should contain the recordings
     """
-    self.roomNo = roomNo
+    self.roomName = roomName
     self.recDir = recDir
     self.fw = None
     self.refreshSchedCnt = 0
@@ -254,13 +265,13 @@ class TalkRecorder:
     Shoud be called every minute.
     """
     now = datetime.now()
-    ld, lt, nd, nt, ct = self.scheduleInterpreter.getLDND(self.roomNo, now)
+    ld, lt, nd, nt, ct = self.scheduleInterpreter.getLDND(self.roomName, now)
     
-    print("-----TalkRecorder for ", self.roomNo, "------")
+    print("-----TalkRecorder for ", self.roomName, "------")
     if ct != None:
       print("There is a current talk running: ", ct.fileName())
       if self.fw == None:
-        self.fw = FileWriter(self.recDir + nt.fileName(), self.roomNo)
+        self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName)
         self.fw.start()
     else:
       print("The last talk was", lt.fileName(), " and it was ", ld, "ago")
@@ -269,12 +280,12 @@ class TalkRecorder:
         print("Good time to restart recording")
         if self.fw != None:
           self.fw.stop()
-          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomNo)
+          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName)
           self.fw.start()
       elif nd < 10 and self.fw == None: 
         print("Good time to start recording")
         if self.fw == None:
-          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomNo)
+          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName)
           self.fw.start()
       if nd > 60 and ld > 60:
         print("Good time to end recording and call it a day...")

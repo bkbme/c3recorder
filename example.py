@@ -2,7 +2,7 @@
 from c3recorder import TalkRecorder
 import time
 
-saal1 = TalkRecorder(1, "/tmp/")
+saal1 = TalkRecorder('saal1', "/tmp/")
 
 while True:
   saal1.poll()
