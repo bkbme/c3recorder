@@ -66,9 +66,9 @@ It will have links to the recordings if available.
               {% if talk.urls|length > 0 %}
               <p>Recordings:
                 <ul>
-                {% for url in talk.urls %}
+                {% for name, url in talk.urls.items() %}
                 <li>
-                  <a href="{{ url }}">{{ talk.urls.index(url) }}</a>
+                  <a href="{{ url }}">{{ name }}</a>
                 </li>
                 {% endfor %}
                 </ul>

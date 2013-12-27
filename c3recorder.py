@@ -55,13 +55,14 @@ class Talk:
     self.endDate = self.startDate + duration_time
     self.lang = lang
     self.id = id
-    self.urls = []
+    self.urls = dict()
   def printit(self):
     """Debug helper"""
     print("({}) start({}) end ({}) room({})".format(self.title, self.startDate, self.endDate, self.room))
   def fileName(self):
     """Return filename for the recording"""
-    return "{}-{}-{}-{}-{}-{}".format(congressName, self.id, self.lang, self.room, self.startDate.strftime("%Y-%m-%d_%H-%M"), self.title)
+    #return "{}-{}-{}-{}-{}-{}".format(congressName, self.id, self.lang, self.room, self.startDate.strftime("%Y-%m-%d_%H-%M"), self.title)
+    return "{}".format(self.title)
   def __repr__(self):
     rv="|{0}|{1}|{2}".format(self.room, self.title, self.startDate)
     return rv
@@ -230,17 +231,12 @@ class FileWriter:
   def start(self):
     """Start the recording"""
     filename = self.destination + "-" + datetime.now().isoformat() + ".mp4"
-    print(filename)
     #p = Popen(["mplayer", self.streamurl + str(self.roomName), "-dumpstream", "-dumpfile", filename])
-    args = ["rtmpdump" ,"-v", "-r", streamurls[self.roomName], "-o", filename]
-    p = Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    args = ["rtmpdump" , "-r", streamurls[self.roomName], "-o", filename]
+    p = Popen(args)
     self.pid = p.pid 
     self.filename = filename
     self.process = p 
-    print(' '.join(args))
-    print(p.pid)
-    print(p.stdout.read())
-    print(p.stderr.read())
 
 class TalkRecorder:
   """Class managing the recording of talks.

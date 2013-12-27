@@ -52,10 +52,15 @@ destDir='/srv/video/'
 allRecordingFiles = glob.glob(destDir + '/*/*.mp4')
 
 for talk in allTalks:
+  i=0
   for rec in allRecordingFiles:
     if "_"+str(talk.id)+"_" in rec:
       url = rec.split(destDir)[-1]
-      talk.urls.append(url)
+      if "_concat_"  in rec:
+        talk.urls['complete'] = url
+      else:
+        talk.urls[i] = url
+        i+=1
 
 t['timeIntervals'] = getTimeIntervals(getDatetime('2013-12-27 10:00'), getDatetime('2013-12-28 06:00'))
 renderTemplate(t, 'fahrplan_d1')
