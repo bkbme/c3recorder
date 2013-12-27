@@ -27,18 +27,22 @@ def getTimeIntervals(startDate, endDate, gratingMinutes=5):
 def getDatetime(string):
   return datetime.datetime.strptime(string, "%Y-%m-%d %H:%M")
 
+def roundTimeTo5Minutes(tm):
+  tm = tm - datetime.timedelta(minutes=tm.minute %5,
+                               seconds=tm.second,
+                               microseconds=tm.microsecond)
+  return tm
+
 s = ScheduleInterpreter()
 s.getSchedule()
 s.createTalksLists()
- 
 
 t = dict()
 t['title'] = "30C3 Fahrplan"
 t['talks'] = s.roomlist
 t['rooms'] = ['saal1', 'saal2', 'saalg', 'saal6']
-t['currentTime'] = datetime.datetime.now()
 t['talkDetailUrl'] = "http://events.ccc.de/congress/2013/Fahrplan/events/{0}.html"
-#t['currentTime'] = s.roomlist['saal1'][0].startDate + datetime.timedelta(minutes=10)
+t['currentTime'] = roundTimeTo5Minutes(datetime.datetime.now())
 
 allTalks = []
 for k in s.roomlist.keys():

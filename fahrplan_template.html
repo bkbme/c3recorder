@@ -4,8 +4,25 @@
 <head>
 <title>{{ title }}</title>
 
+<link rel="stylesheet" href="winterblues.css" type="text/css">
+
 </head>
 <body>
+
+<div class='text'>
+Note: This is the fahrplan rendered out of the official published xml file.<br>
+It will have links to the recordings if available.
+</div>
+
+<table border='1'>
+  <tr>
+    {% for i in range(1,5) %}
+    <th>
+      <a href="fahrplan_d{{ i }}.html">Day {{ i }}</a>
+    </th>
+    {% endfor %}
+  </tr>
+</table>
 
 <table border='1'>
 <tr>
