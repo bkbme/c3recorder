@@ -55,7 +55,10 @@ class Talk:
     self.endDate = self.startDate + duration_time
     self.lang = lang
     self.id = id
+
+    #Used for fahrplan
     self.urls = dict()
+    self.filesizes=dict()
   def printit(self):
     """Debug helper"""
     print("({}) start({}) end ({}) room({})".format(self.title, self.startDate, self.endDate, self.room))
@@ -208,13 +211,14 @@ from subprocess import Popen
 class FileWriter:
   """Class for recording talks, encapsulating mplayer"""
   #streamurl = "http://wmv.{}.fem-net.de/saal".format(congressName)
-  def __init__(self, destination, roomName):
+  def __init__(self, destination, roomName, talk=None):
     """Create an instance of the FileWriter class
     destination -- destination file where the talk should be written to
     roomName      -- roomNumber which should be recorded
     """
     self.destination = destination
     self.roomName = roomName
+    self.talk = talk
 
   def poll(self):
     """Call this periodically to make sure that
@@ -226,7 +230,8 @@ class FileWriter:
 
   def stop(self):
     """Stop the recording"""
-    self.process.terminate()
+    if self.process != None:
+      self.process.terminate()
 
   def start(self):
     """Start the recording"""
@@ -266,14 +271,27 @@ class TalkRecorder:
     Shoud be called every minute.
     """
     now = datetime.now()
+    """
+    ld -- lastDelta  -- How long ended the last Talk
+    lt -- lastTalk   -- The ended talk
+    nd -- nextDelta  -- When will the next talk start
+    nt -- nextTalk   -- The next talk
+    ct -- currentTalk-- The current talk, which has started but not ended
+    """
     ld, lt, nd, nt, ct = self.scheduleInterpreter.getLDND(self.roomName, now)
     
     print("-----TalkRecorder for ", self.roomName, "------")
     if ct != None:
       print("There is a current talk running: ", ct.fileName())
       if self.fw == None:
-        self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName)
+        self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName, nt)
         self.fw.start()
+      elif abs(nd-ld) < 2:
+        print("Good time to restart recording")
+        if self.fw != None:
+          self.fw.stop()
+          self.fw = FileWriter(self.recDir + ct.fileName(), self.roomName, ct)
+          self.fw.start()
     else:
       print("The last talk was", lt.fileName(), " and it was ", ld, "ago")
       print("The next talk is", nt.fileName(), " and it will start in ", nd)
@@ -281,12 +299,12 @@ class TalkRecorder:
         print("Good time to restart recording")
         if self.fw != None:
           self.fw.stop()
-          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName)
+          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName, nt)
           self.fw.start()
       elif nd < 10 and self.fw == None: 
         print("Good time to start recording")
         if self.fw == None:
-          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName)
+          self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName, nt)
           self.fw.start()
       if nd > 60 and ld > 60:
         print("Good time to end recording and call it a day...")

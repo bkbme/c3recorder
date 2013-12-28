@@ -68,7 +68,7 @@ It will have links to the recordings if available.
                 <ul>
                 {% for name, url in talk.urls.items() %}
                 <li>
-                  <a href="{{ url }}">{{ name }}</a>
+                  <a href="{{ url }}">{{ name }} <em>({{ (talk.filesizes[name]/(1024*1024.0)) | round  | int }} MB)</em></a>
                 </li>
                 {% endfor %}
                 </ul>

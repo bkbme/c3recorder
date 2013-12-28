@@ -58,8 +58,10 @@ for talk in allTalks:
       url = rec.split(destDir)[-1]
       if "_concat_"  in rec:
         talk.urls['complete'] = url
+        talk.filesizes['complete'] = os.path.getsize(rec)
       else:
         talk.urls[i] = url
+        talk.filesizes[i] = os.path.getsize(rec)
         i+=1
 
 t['timeIntervals'] = getTimeIntervals(getDatetime('2013-12-27 10:00'), getDatetime('2013-12-28 06:00'))
