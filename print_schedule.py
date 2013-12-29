@@ -9,7 +9,9 @@ import datetime, time
 def renderTemplate(templateVars, output='fahrplan'):
 # Capture our current directory
   THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-  j2_env = Environment(loader=FileSystemLoader(THIS_DIR), trim_blocks=True)
+  j2_env = Environment(loader=FileSystemLoader(THIS_DIR), 
+                       trim_blocks=True,
+                       extensions=["jinja2.ext.do",])
   outputHtml = j2_env.get_template('fahrplan_template.html').render(templateVars)
 
   f = open('/srv/video/{0}.html'.format(output), 'w')
@@ -50,12 +52,13 @@ for k in s.roomlist.keys():
 
 destDir='/srv/video/'
 allRecordingFiles = glob.glob(destDir + '/*/*.mp4')
+allRecordingFiles.extend(glob.glob(destDir + "/CCC/30C3/*/*.mp4"))
 
 for talk in allTalks:
   i=0
   for rec in allRecordingFiles:
+    url = rec.split(destDir)[-1]
     if "_"+str(talk.id)+"_" in rec:
-      url = rec.split(destDir)[-1]
       if "_concat_"  in rec:
         talk.urls['complete'] = url
         talk.filesizes['complete'] = os.path.getsize(rec)
@@ -63,6 +66,10 @@ for talk in allTalks:
         talk.urls[i] = url
         talk.filesizes[i] = os.path.getsize(rec)
         i+=1
+    elif "-"+str(talk.id)+"-" in rec and "CCC/30C3" in rec:
+      talk.urls['OFFICIAL'] = url
+      talk.filesizes['OFFICIAL']  = os.path.getsize(rec)
+      
 
 t['timeIntervals'] = getTimeIntervals(getDatetime('2013-12-27 10:00'), getDatetime('2013-12-28 06:00'))
 renderTemplate(t, 'fahrplan_d1')
@@ -71,5 +78,6 @@ renderTemplate(t, 'fahrplan_d2')
 t['timeIntervals'] = getTimeIntervals(getDatetime('2013-12-29 10:00'), getDatetime('2013-12-30 06:00'))
 renderTemplate(t, 'fahrplan_d3')
 t['timeIntervals'] = getTimeIntervals(getDatetime('2013-12-30 10:00'), getDatetime('2013-12-31 06:00'))
+
 renderTemplate(t, 'fahrplan_d4')
 

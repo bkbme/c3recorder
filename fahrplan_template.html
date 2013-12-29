@@ -55,8 +55,9 @@ It will have links to the recordings if available.
     {% endif %}
 
       {% for room in rooms %}
+        {% set roomFound = [] %}
         {% for talk in talks[room] %}
-          {% if talk.startDate == time %}
+          {%if talk.startDate == time %}
             <td rowspan={{ ((talk.endDate - talk.startDate).total_seconds() / (5*60)) | int }} >
             <a href="{{ talkDetailUrl.format(talk.id) }}">
             <b>{{ talk.titleText }}</b><br>
@@ -72,12 +73,19 @@ It will have links to the recordings if available.
                 </li>
                 {% endfor %}
                 </ul>
-
               {% endif %}
             </td>
           {% endif %}
+          {% if talk.startDate <= time and talk.endDate > time %}
+            {% do roomFound.append(1) %}
+          {% endif %}
         {% endfor %}
+        {% if roomFound|length == 0 %}
+          <td style="border:none;"></td>
+        {% endif %}
       {% endfor %}
+
+
   </tr>
 {% endfor %}
 

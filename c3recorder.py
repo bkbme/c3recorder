@@ -23,7 +23,9 @@ class Talk:
             'Saal 17': 'saal17', \
             'Wordlounge': 'worldlounge',\
             'Villa Straylight': 'villa_straylight',\
-            'Lounge': 'lounge'}
+            'Lounge': 'lounge', \
+            'Revolution #9': 'revolution9'
+            }
 
   """Class representing a ccc talk"""
   def __init__(self, title, day, start, duration, room, id, lang):
@@ -286,12 +288,11 @@ class TalkRecorder:
       if self.fw == None:
         self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName, nt)
         self.fw.start()
-      elif abs(nd-ld) < 2:
-        print("Good time to restart recording")
-        if self.fw != None:
-          self.fw.stop()
-          self.fw = FileWriter(self.recDir + ct.fileName(), self.roomName, ct)
-          self.fw.start()
+      elif self.fw.talk is not None and self.fw.talk is not ct and abs(nd-ld) < 2:
+        print("Back to back talks: Good time to restart recording")
+        self.fw.stop()
+        self.fw = FileWriter(self.recDir + ct.fileName(), self.roomName, ct)
+        self.fw.start()
     else:
       print("The last talk was", lt.fileName(), " and it was ", ld, "ago")
       print("The next talk is", nt.fileName(), " and it will start in ", nd)
