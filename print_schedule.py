@@ -66,7 +66,7 @@ for talk in allTalks:
         talk.urls[i] = url
         talk.filesizes[i] = os.path.getsize(rec)
         i+=1
-    elif "-"+str(talk.id)+"-" in rec and "CCC/30C3" in rec:
+    elif "-"+str(talk.id)+"-" in rec and "CCC/30C3" in rec and ('-hq' in rec or '-hd' in rec):
       talk.urls['OFFICIAL'] = url
       talk.filesizes['OFFICIAL']  = os.path.getsize(rec)
       
