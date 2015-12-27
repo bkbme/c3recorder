@@ -3,12 +3,18 @@ import xml.etree.ElementTree
 from datetime import datetime, timedelta, date, time
 import subprocess
 
-congressName='30c3'
+congressName='32c3'
+#streamurls={ \
+#            'hall1': 'rtmp://rtmp-hd.streaming.media.ccc.de:1935/stream/hall1_native_hd', \
+#            'hall2': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/hall2_native_hq', \
+#            'hallg': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/hallg_native_hq', \
+#            'hall6': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/hall6_native_hq', \
+#           }
 streamurls={ \
-            'saal1': 'rtmp://rtmp-hd.streaming.media.ccc.de:1935/stream/saal1_native_hd', \
-            'saal2': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/saal2_native_hq', \
-            'saalg': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/saalg_native_hq', \
-            'saal6': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/saal6_native_hq', \
+            'hall1': 'http://cdn.c3voc.de/s1_native_hd.webm', \
+            'hall2': 'http://cdn.c3voc.de/s2_native_hd.webm', \
+            'hallg': 'http://cdn.c3voc.de/s3_native_hd.webm', \
+            'hall6': 'http://cdn.c3voc.de/s4_native_hd.webm', \
            }
 
 class Talk:
@@ -16,11 +22,11 @@ class Talk:
      from external Names (as in the Fahrplan) to linux file friendly names.
      Talk objects use the right side of the table as room names.
   """
-  roomlist={'Saal 1': 'saal1', \
-            'Saal 2': 'saal2', \
-            'Saal 6': 'saal6', \
-            'Saal G': 'saalg', \
-            'Saal 17': 'saal17', \
+  roomlist={'Hall 1': 'hall1', \
+            'Hall 2': 'hall2', \
+            'Hall 6': 'hall6', \
+            'Hall G': 'hallg', \
+            'Hall 17': 'hall17', \
             'Wordlounge': 'worldlounge',\
             'Villa Straylight': 'villa_straylight',\
             'Lounge': 'lounge', \
@@ -80,7 +86,7 @@ class ScheduleInterpreter:
   and calculate what is going on right now.
   """
   host = "events.ccc.de"
-  url  = "/congress/2013/Fahrplan/schedule.xml"
+  url  = "/congress/2015/Fahrplan/schedule.xml"
   def getSchedule(self):
     """Get xml schedule from the web and parse the xml.
     Save downloaded xml to file.
@@ -91,7 +97,7 @@ class ScheduleInterpreter:
     import http.client
 
     try:
-      conn = http.client.HTTPConnection(self.host)
+      conn = http.client.HTTPSConnection(self.host, timeout=15)
       conn.request("GET", self.url)
       r1 = conn.getresponse()
       data = r1.read().decode("utf-8")
@@ -116,7 +122,7 @@ class ScheduleInterpreter:
 
   def createTalksLists(self):
     """use getSchedule to download schedule.
-    Create members "saal1", "saal4", "saal6", which
+    Create members "hall1", "hall4", "hall6", which
     represent a sorted list of talks.
     """
     schedule = self.getSchedule()
@@ -212,7 +218,7 @@ from subprocess import Popen
 
 class FileWriter:
   """Class for recording talks, encapsulating mplayer"""
-  #streamurl = "http://wmv.{}.fem-net.de/saal".format(congressName)
+  #streamurl = "http://wmv.{}.fem-net.de/hall".format(congressName)
   def __init__(self, destination, roomName, talk=None):
     """Create an instance of the FileWriter class
     destination -- destination file where the talk should be written to
@@ -237,9 +243,10 @@ class FileWriter:
 
   def start(self):
     """Start the recording"""
-    filename = self.destination + "-" + datetime.now().isoformat() + ".mp4"
+    filename = self.destination + "-" + datetime.now().isoformat() + ".webm"
     #p = Popen(["mplayer", self.streamurl + str(self.roomName), "-dumpstream", "-dumpfile", filename])
-    args = ["rtmpdump" , "-r", streamurls[self.roomName], "-o", filename]
+    #args = ["rtmpdump" , "-r", streamurls[self.roomName], "-o", filename]
+    args = ["wget", streamurls[self.roomName], "-O", filename]
     p = Popen(args)
     self.pid = p.pid 
     self.filename = filename
