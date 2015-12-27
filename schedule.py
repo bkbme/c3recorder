@@ -5,8 +5,8 @@ import os
 import fnmatch
 
 #Constants
-serverUrl="http://30c3.ex23.de/"
-fahrplanUrl="http://events.ccc.de/congress/2013/Fahrplan/events/"
+serverUrl="http://32c3.ex23.de/"
+fahrplanUrl="http://events.ccc.de/congress/2015/Fahrplan/events/"
 listOutput="/srv/video/html/DataTables/list.html"
 recordingLocation="/srv/video/"
 
