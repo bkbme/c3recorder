@@ -3,7 +3,7 @@ import xml.etree.ElementTree
 from datetime import datetime, timedelta, date, time
 import subprocess
 
-congressName='32c3'
+congressName='33c3'
 #streamurls={ \
 #            'hall1': 'rtmp://rtmp-hd.streaming.media.ccc.de:1935/stream/hall1_native_hd', \
 #            'hall2': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/hall2_native_hq', \
@@ -22,15 +22,16 @@ class Talk:
      from external Names (as in the Fahrplan) to linux file friendly names.
      Talk objects use the right side of the table as room names.
   """
-  roomlist={'Hall 1': 'hall1', \
-            'Hall 2': 'hall2', \
-            'Hall 6': 'hall6', \
-            'Hall G': 'hallg', \
-            'Hall 17': 'hall17', \
+  roomlist={'Saal 1': 'hall1', \
+            'Saal 2': 'hall2', \
+            'Saal 6': 'hall6', \
+            'Saal G': 'hallg', \
+            'Saal 17': 'hall17', \
             'Wordlounge': 'worldlounge',\
             'Villa Straylight': 'villa_straylight',\
             'Lounge': 'lounge', \
-            'Revolution #9': 'revolution9'
+            'Revolution #9': 'revolution9', \
+            'dradio': 'dradio'
             }
 
   """Class representing a ccc talk"""
@@ -85,9 +86,9 @@ class ScheduleInterpreter:
   sort the talks by date and time
   and calculate what is going on right now.
   """
-  host = "events.ccc.de"
-  url  = "/congress/2015/Fahrplan/schedule.xml"
-  def getSchedule(self):
+  host = "fahrplan.events.ccc.de"
+  url  = "/congress/2016/Fahrplan/schedule.xml"
+  def getSchedule(self, downloadNow = False):
     """Get xml schedule from the web and parse the xml.
     Save downloaded xml to file.
     If the downloading of the schedule fails, use the previously 
@@ -95,14 +96,15 @@ class ScheduleInterpreter:
     """
     data = None
     import http.client
-
-    try:
-      conn = http.client.HTTPSConnection(self.host, timeout=15)
-      conn.request("GET", self.url)
-      r1 = conn.getresponse()
-      data = r1.read().decode("utf-8")
-    except:
-      pass
+   
+    if(downloadNow):
+      try:
+        conn = http.client.HTTPSConnection(self.host, timeout=30)
+        conn.request("GET", self.url)
+        r1 = conn.getresponse()
+        data = r1.read().decode("utf-8")
+      except:
+        print("Failed to download schedule!")
 
     """Add a litte redundancy: if parsing of downloaded content fails 
        aka. server is not available, then load the schedule from previously saved file"""
@@ -113,19 +115,18 @@ class ScheduleInterpreter:
       schedXml.write(data)
       schedXml.close()
     except: 
-      print("Failed to download schedule!")
       schedXml = open("schedule.xml", "r")
       data = schedXml.read()
       tree = xml.etree.ElementTree.fromstring(data)
       schedXml.close()
     return tree
 
-  def createTalksLists(self):
+  def createTalksLists(self, downloadScheduleNow = False):
     """use getSchedule to download schedule.
     Create members "hall1", "hall4", "hall6", which
     represent a sorted list of talks.
     """
-    schedule = self.getSchedule()
+    schedule = self.getSchedule(downloadScheduleNow)
     days = schedule.getiterator("day")
 
     talkList = []
@@ -292,8 +293,14 @@ class TalkRecorder:
     print("-----TalkRecorder for ", self.roomName, "------")
     if ct != None:
       print("There is a current talk running: ", ct.fileName())
+      print("nd %f ld %f" % (nd, ld))
       if self.fw == None:
         self.fw = FileWriter(self.recDir + nt.fileName(), self.roomName, nt)
+        self.fw.start()
+      if self.fw.talk.id != ct.id:
+        print("self.fw.talk is %s ct is %s" % (str(self.fw.talk), str(ct)))
+        self.fw.stop()
+        self.fw = FileWriter(self.recDir + ct.fileName(), self.roomName, ct)
         self.fw.start()
     else:
       print("The last talk was", lt.fileName(), " and it was ", ld, "ago")
@@ -314,7 +321,8 @@ class TalkRecorder:
         if self.fw != None:
           self.fw.stop()
           self.fw = None
-    if self.refreshSchedCnt > 10:
-      self.scheduleInterpreter.createTalksLists()
+    if self.refreshSchedCnt > 30:
+      self.scheduleInterpreter.createTalksLists(downloadScheduleNow=True)
+      self.refreshSchedCnt = 0
     self.refreshSchedCnt += 1
 

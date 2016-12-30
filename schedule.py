@@ -5,8 +5,8 @@ import os
 import fnmatch
 
 #Constants
-serverUrl="http://32c3.ex23.de/"
-fahrplanUrl="http://events.ccc.de/congress/2015/Fahrplan/events/"
+serverUrl="http://33c3.ex23.de/"
+fahrplanUrl="http://events.ccc.de/congress/2016/Fahrplan/events/"
 listOutput="/srv/video/html/DataTables/list.html"
 recordingLocation="/srv/video/"
 
@@ -14,10 +14,10 @@ s = ScheduleInterpreter()
 s.createTalksLists()
 
 day = [datetime.now()]*5
-day[1] = datetime.strptime("2013-12-27", "%Y-%m-%d")
-day[2] = datetime.strptime("2013-12-28", "%Y-%m-%d")
-day[3] = datetime.strptime("2013-12-29", "%Y-%m-%d")
-day[4] = datetime.strptime("2013-12-30", "%Y-%m-%d")
+day[1] = datetime.strptime("2016-12-27", "%Y-%m-%d")
+day[2] = datetime.strptime("2016-12-28", "%Y-%m-%d")
+day[3] = datetime.strptime("2016-12-29", "%Y-%m-%d")
+day[4] = datetime.strptime("2016-12-30", "%Y-%m-%d")
 
 talksByDay = []
 talksByDay.append([])
