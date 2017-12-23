@@ -3,21 +3,22 @@ from c3recorder import ScheduleInterpreter
 from datetime import datetime, timedelta, date, time
 import os
 import fnmatch
+import constants
 
 #Constants
-serverUrl="http://33c3.ex23.de/"
-fahrplanUrl="http://events.ccc.de/congress/2016/Fahrplan/events/"
-listOutput="/srv/video/html/DataTables/list.html"
-recordingLocation="/srv/video/"
+serverUrl=constants.serverUrl
+fahrplanUrl="http://" + constants.fahrplanHost + constants.fahrplanUrl
+listOutput= constants.videoDestDir + "/DataTables/list.html"
+recordingLocation= constants.videoDestDir
 
 s = ScheduleInterpreter()
 s.createTalksLists()
 
 day = [datetime.now()]*5
-day[1] = datetime.strptime("2016-12-27", "%Y-%m-%d")
-day[2] = datetime.strptime("2016-12-28", "%Y-%m-%d")
-day[3] = datetime.strptime("2016-12-29", "%Y-%m-%d")
-day[4] = datetime.strptime("2016-12-30", "%Y-%m-%d")
+day[1] = datetime.strptime("2017-12-27", "%Y-%m-%d")
+day[2] = datetime.strptime("2017-12-28", "%Y-%m-%d")
+day[3] = datetime.strptime("2017-12-29", "%Y-%m-%d")
+day[4] = datetime.strptime("2017-12-30", "%Y-%m-%d")
 
 talksByDay = []
 talksByDay.append([])

@@ -7,6 +7,7 @@ import os
 import datetime, time
 import re
 import collections
+import constants
 
 def renderTemplate(templateVars, output='fahrplan'):
 # Capture our current directory
@@ -18,7 +19,7 @@ def renderTemplate(templateVars, output='fahrplan'):
 
   outputHtml = re.sub(' +',' ',outputHtml)
 
-  f = open('/srv/www/html/33c3.ex23.de/{0}.html'.format(output), 'w')
+  f = open(constants.scheduleOutputLocation.format(output), 'w')
   f.write(outputHtml)
   f.close()
 
@@ -44,19 +45,20 @@ s.getSchedule()
 s.createTalksLists()
 
 t = dict()
-t['title'] = "33C3 Fahrplan"
+t['title'] = constants.scheduleTitle
 t['talks'] = s.roomlist
-t['rooms'] = ['hall1', 'hall2', 'hallg', 'hall6']
-t['talkDetailUrl'] = "https://fahrplan.events.ccc.de/congress/2016/Fahrplan/events/{0}.html"
+t['rooms'] = constants.rooms
+t['talkDetailUrl'] = constants.talkDetailUrl 
 t['currentTime'] = roundTimeTo5Minutes(datetime.datetime.now())
 
 allTalks = []
 for k in s.roomlist.keys():
   allTalks.extend(s.roomlist[k])
 
-destDir='/srv/www/html/33c3.ex23.de/'
-allRecordingFiles = glob.glob(destDir + '/*/*.webm')
-allRecordingFiles.extend(glob.glob(destDir + "/CCC/33C3/*/*.webm"))
+destDir=constants.videoDestDir
+allRecordingFiles = []
+for location in constants.recordingsSearchGlobs:
+    allRecordingFiles.extend(glob.glob(destDir + location))
 
 for talk in allTalks:
   i=0
@@ -70,17 +72,16 @@ for talk in allTalks:
         talk.urls[i] = url
         talk.filesizes[i] = os.path.getsize(rec)
         i+=1
-    elif "-"+str(talk.id)+"-" in rec and "CCC/33C3" in rec and ('-hq' in rec or '-hd' in rec):
+    elif "-"+str(talk.id)+"-" in rec and "CCC/{}".format(constants.congressName) in rec and ('-hq' in rec or '-hd' in rec):
       talk.urls['OFFICIAL'] = url
       talk.filesizes['OFFICIAL']  = os.path.getsize(rec)
-  
 
-t['timeIntervals'] = getTimeIntervals(getDatetime('2016-12-27 10:00'), getDatetime('2016-12-28 06:00'))
+t['timeIntervals'] = getTimeIntervals(getDatetime(constants.day1[0]), getDatetime(constants.day1[1]))
 renderTemplate(t, 'fahrplan_d1')
-t['timeIntervals'] = getTimeIntervals(getDatetime('2016-12-28 10:00'), getDatetime('2016-12-29 06:00'))
+t['timeIntervals'] = getTimeIntervals(getDatetime(constants.day2[0]), getDatetime(constants.day2[1]))
 renderTemplate(t, 'fahrplan_d2')
-t['timeIntervals'] = getTimeIntervals(getDatetime('2016-12-29 10:00'), getDatetime('2016-12-30 06:00'))
+t['timeIntervals'] = getTimeIntervals(getDatetime(constants.day3[0]), getDatetime(constants.day3[1]))
 renderTemplate(t, 'fahrplan_d3')
-t['timeIntervals'] = getTimeIntervals(getDatetime('2016-12-30 10:00'), getDatetime('2016-12-31 06:00'))
+t['timeIntervals'] = getTimeIntervals(getDatetime(constants.day4[0]), getDatetime(constants.day4[1]))
 renderTemplate(t, 'fahrplan_d4')
 

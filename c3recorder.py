@@ -2,38 +2,9 @@
 import xml.etree.ElementTree 
 from datetime import datetime, timedelta, date, time
 import subprocess
-
-congressName='33c3'
-#streamurls={ \
-#            'hall1': 'rtmp://rtmp-hd.streaming.media.ccc.de:1935/stream/hall1_native_hd', \
-#            'hall2': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/hall2_native_hq', \
-#            'hallg': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/hallg_native_hq', \
-#            'hall6': 'rtmp://rtmp.streaming.media.ccc.de:1935/stream/hall6_native_hq', \
-#           }
-streamurls={ \
-            'hall1': 'http://cdn.c3voc.de/s1_native_hd.webm', \
-            'hall2': 'http://cdn.c3voc.de/s2_native_hd.webm', \
-            'hallg': 'http://cdn.c3voc.de/s3_native_hd.webm', \
-            'hall6': 'http://cdn.c3voc.de/s4_native_hd.webm', \
-           }
+import constants
 
 class Talk:
-  """Mapping of room names.
-     from external Names (as in the Fahrplan) to linux file friendly names.
-     Talk objects use the right side of the table as room names.
-  """
-  roomlist={'Saal 1': 'hall1', \
-            'Saal 2': 'hall2', \
-            'Saal 6': 'hall6', \
-            'Saal G': 'hallg', \
-            'Saal 17': 'hall17', \
-            'Wordlounge': 'worldlounge',\
-            'Villa Straylight': 'villa_straylight',\
-            'Lounge': 'lounge', \
-            'Revolution #9': 'revolution9', \
-            'dradio': 'dradio'
-            }
-
   """Class representing a ccc talk"""
   def __init__(self, title, day, start, duration, room, id, lang):
     """Create instance of Talk class:
@@ -56,10 +27,10 @@ class Talk:
       self.startDate += timedelta(days=1)
     duration_time = timedelta(hours=int(duration.split(':')[0]), minutes=int(duration.split(':')[1]));
 
-    if room not in self.roomlist:
+    if room not in constants.roomlist:
       raise Exception("Unknown room name: {0}".format(room))
     else:
-      self.room = self.roomlist[room]
+      self.room = constants.roomlist[room]
 
     self.endDate = self.startDate + duration_time
     self.lang = lang
@@ -86,8 +57,8 @@ class ScheduleInterpreter:
   sort the talks by date and time
   and calculate what is going on right now.
   """
-  host = "fahrplan.events.ccc.de"
-  url  = "/congress/2016/Fahrplan/schedule.xml"
+  host = constants.fahrplanHost
+  url  = constants.fahrplanUrl
   def getSchedule(self, downloadNow = False):
     """Get xml schedule from the web and parse the xml.
     Save downloaded xml to file.
@@ -159,8 +130,8 @@ class ScheduleInterpreter:
 
     roomlist = dict()
 
-    for room in Talk.roomlist:
-      roomlist[Talk.roomlist[room]] = []
+    for room in constants.roomlist:
+      roomlist[constants.roomlist[room]] = []
 
     for talk in talkList:
       roomlist[talk.room].append(talk)
@@ -219,7 +190,6 @@ from subprocess import Popen
 
 class FileWriter:
   """Class for recording talks, encapsulating mplayer"""
-  #streamurl = "http://wmv.{}.fem-net.de/hall".format(congressName)
   def __init__(self, destination, roomName, talk=None):
     """Create an instance of the FileWriter class
     destination -- destination file where the talk should be written to
@@ -247,7 +217,7 @@ class FileWriter:
     filename = self.destination + "-" + datetime.now().isoformat() + ".webm"
     #p = Popen(["mplayer", self.streamurl + str(self.roomName), "-dumpstream", "-dumpfile", filename])
     #args = ["rtmpdump" , "-r", streamurls[self.roomName], "-o", filename]
-    args = ["wget", streamurls[self.roomName], "-O", filename]
+    args = ["wget", constants.streamurls[self.roomName], "-O", filename]
     p = Popen(args)
     self.pid = p.pid 
     self.filename = filename
