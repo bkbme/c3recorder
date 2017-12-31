@@ -64,7 +64,10 @@ for talk in allTalks:
   i=0
   for rec in allRecordingFiles:
     url = rec.split(destDir)[-1]
-    if "-"+str(talk.id)+"-" in rec:
+    if "-"+str(talk.id)+"-" in rec and "official" in url:
+      talk.urls['OFFICIAL'] = url
+      talk.filesizes['OFFICIAL']  = os.path.getsize(rec)
+    elif "-"+str(talk.id)+"-" in rec:
       if "_concat_"  in rec:
         talk.urls['complete'] = url
         talk.filesizes['complete'] = os.path.getsize(rec)
@@ -72,9 +75,6 @@ for talk in allTalks:
         talk.urls[i] = url
         talk.filesizes[i] = os.path.getsize(rec)
         i+=1
-    elif "-"+str(talk.id)+"-" in rec and "CCC/{}".format(constants.congressName) in rec and ('-hq' in rec or '-hd' in rec):
-      talk.urls['OFFICIAL'] = url
-      talk.filesizes['OFFICIAL']  = os.path.getsize(rec)
 
 t['timeIntervals'] = getTimeIntervals(getDatetime(constants.day1[0]), getDatetime(constants.day1[1]))
 renderTemplate(t, 'fahrplan_d1')

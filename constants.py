@@ -8,12 +8,12 @@ fahrplanUrl = "/congress/{}/Fahrplan/schedule.xml".format(congressYear)
 serverUrl = 'https://{}.ex23.de'.format(congressName)
 
 talkDetailUrl = "https://fahrplan.events.ccc.de/congress/2017/Fahrplan/events/{0}.html"
-recordingsSearchGlobs = ['/*/*.webm', '/CCC/{}/*/*.webm'.format(congressName)]
+recordingsSearchGlobs = ['/*/*.webm', '/official/*.mp4']
 streamurls={ \
-            'hall1': 'http://cdn.c3voc.de/s1_native_hd.webm', \
-            'hall2': 'http://cdn.c3voc.de/s2_native_hd.webm', \
-            'hallg': 'http://cdn.c3voc.de/s3_native_hd.webm', \
-            'hall6': 'http://cdn.c3voc.de/s4_native_hd.webm', \
+            'hallAdams': 'http://cdn.c3voc.de/s1_native_hd.webm', \
+            'hallBorg': 'http://cdn.c3voc.de/s2_native_hd.webm', \
+            'hallClarke': 'http://cdn.c3voc.de/s3_native_hd.webm', \
+            'hallDijkstra': 'http://cdn.c3voc.de/s4_native_hd.webm', \
            }
 
 """Mapping of room names.
