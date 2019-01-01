@@ -217,7 +217,7 @@ class FileWriter:
     filename = self.destination + "-" + datetime.now().isoformat() + ".webm"
     #p = Popen(["mplayer", self.streamurl + str(self.roomName), "-dumpstream", "-dumpfile", filename])
     #args = ["rtmpdump" , "-r", streamurls[self.roomName], "-o", filename]
-    args = ["wget", constants.streamurls[self.roomName], "-O", filename]
+    args = ["wget", "-4", constants.streamurls[self.roomName], "-O", filename]
     p = Popen(args)
     self.pid = p.pid 
     self.filename = filename

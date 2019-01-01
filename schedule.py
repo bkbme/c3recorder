@@ -15,10 +15,10 @@ s = ScheduleInterpreter()
 s.createTalksLists()
 
 day = [datetime.now()]*5
-day[1] = datetime.strptime("2017-12-27", "%Y-%m-%d")
-day[2] = datetime.strptime("2017-12-28", "%Y-%m-%d")
-day[3] = datetime.strptime("2017-12-29", "%Y-%m-%d")
-day[4] = datetime.strptime("2017-12-30", "%Y-%m-%d")
+day[1] = datetime.strptime("2018-12-27", "%Y-%m-%d")
+day[2] = datetime.strptime("2018-12-28", "%Y-%m-%d")
+day[3] = datetime.strptime("2018-12-29", "%Y-%m-%d")
+day[4] = datetime.strptime("2018-12-30", "%Y-%m-%d")
 
 talksByDay = []
 talksByDay.append([])
